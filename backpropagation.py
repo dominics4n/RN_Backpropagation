@@ -3,7 +3,7 @@ from random import seed
 from random import random
 import csv
 
-seed(1)
+seed("LindaLindaLinda")
 
 class Neuronas:
     pesos = []
