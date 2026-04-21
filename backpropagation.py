@@ -85,7 +85,8 @@ def Actualizar_Pesos(Red_N, Soli_Beca, B):
             Nuevos_Inputs.append(neurona.salida)
         inputs = Nuevos_Inputs
 
-def Entrena(Red_N, Set_Entrenamiento, B, n_rondas, resultados):
+def Entrena(Red_N, Set_Entrenamiento, B, n_rondas, resultados, FrecuenciaPrint, NivelPrint):
+    printcount = FrecuenciaPrint
     for ronda in range(n_rondas):
         sum_error = 0
         num_error = 0
@@ -93,7 +94,9 @@ def Entrena(Red_N, Set_Entrenamiento, B, n_rondas, resultados):
         kys = 0
         for row in Set_Entrenamiento:
             output = Propagar_Entradas(Red_N, row)
-            #print("\tSolicitud "+str(soli)+".- Prediccion: "+str(output[0])+"  Esperado: " + str(resultados[kys]))
+            if nivelprint == 2:
+                if printcount == FrecuenciaPrint:
+                    print("\tSolicitud "+str(soli)+".- Prediccion: "+str(output[0])+"  Esperado: " + str(resultados[kys]))
             soli += 1
             sum_error += abs(resultados[kys]-output[0])
             if abs(resultados[kys]-output[0]) > 0.1:
@@ -101,7 +104,12 @@ def Entrena(Red_N, Set_Entrenamiento, B, n_rondas, resultados):
             Propagar_Errores(Red_N, resultados[kys])
             Actualizar_Pesos(Red_N, row, B)
             kys = kys + 1
-        print('>Ronda %d: Errores=%d, Sumatoria de errores=%.3f' % (ronda, num_error, sum_error))
+        if NivelPrint != 0:
+            if printcount == FrecuenciaPrint:
+                print('>Ronda %d: Errores=%d, Sumatoria de errores=%.3f' % (ronda, num_error, sum_error))
+                printcount = 0
+            else:
+                printcount += 1
     
 
 def Predecir(Red_N, Solicitud):
@@ -204,6 +212,8 @@ def Preguntas_Input():
 
     return [[Edad],[Ingreso],[Calificacion],[Modalidad],[Dependientes],[Recurses],[lvleconomico],[BecasPlus]]
 
+
+
 # Open the CSV file for reading
 dataset = []
 outputs = []
@@ -226,11 +236,12 @@ minmax = MinMax(Categorias)
 dataset = Normalizar(Categorias, minmax[0], minmax[1])
 n_inputs = len(dataset[0])
 n_outputs = 1
-
+frecuenciaprint = 0
+nivelprint = 1
 
 Red = Crear_Red(n_inputs, 2, 3, n_outputs)
-Entrena(Red, dataset, 0.5, 5000, outputs)
+Entrena(Red, dataset, 0.5, 5000, outputs, frecuenciaprint, nivelprint)
 inputbase = Preguntas_Input()
 prediccion_Set = Normalizar(inputbase, minmax[0], minmax[1])
-print()
+
 Predecir(Red, prediccion_Set[0])
