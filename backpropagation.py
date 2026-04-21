@@ -86,23 +86,34 @@ def Actualizar_Pesos(Red_N, Soli_Beca, B):
         inputs = Nuevos_Inputs
 
 def Entrena(Red_N, Set_Entrenamiento, B, n_rondas, resultados):
-    kys = 0
     for ronda in range(n_rondas):
         sum_error = 0
         num_error = 0
+        soli = 0
+        kys = 0
         for row in Set_Entrenamiento:
             output = Propagar_Entradas(Red_N, row)
+            #print("\tSolicitud "+str(soli)+".- Prediccion: "+str(output[0])+"  Esperado: " + str(resultados[kys]))
+            soli += 1
             sum_error += abs(resultados[kys]-output[0])
             if abs(resultados[kys]-output[0]) > 0.1:
                 num_error += 1
             Propagar_Errores(Red_N, resultados[kys])
             Actualizar_Pesos(Red_N, row, B)
+            kys = kys + 1
         print('>Ronda %d: Errores=%d, Sumatoria de errores=%.3f' % (ronda, num_error, sum_error))
-    kys = kys + 1
+    
 
-def Predecir(Red_N):
-    Edad, Ingreso Mensual,Calificacion,Modalidad Escolar,Dependientes,Recurses,Nivel economico,Becas Adicionales = []
-    int(input("Ingresa " + xyString + ": "))
+def Predecir(Red_N, Solicitud):
+    Prediccion = Propagar_Entradas(Red_N, Solicitud)
+    print("La prediccion del sistema es: "+str(Prediccion[0]))
+    if(Prediccion[0] > 0.5):
+        print("La beca fue aceptada")
+    else:
+        print("La beca fue rechazada")
+
+def Preguntas_Input():
+    #Pregunta edad
     valido = False
     while not valido:
         try:
@@ -113,14 +124,92 @@ def Predecir(Red_N):
                 valido = True
         except ValueError:
             print("Ingresa una edad valida")
-    Prediccion = Propagar_Entradas(Red_N, Solicitud)
-    print(Prediccion)
+    #Pregunta Ingreso
+    valido = False
+    while not valido:
+        try:
+            Ingreso = float(input("Ingresa el ingreso mensual del aspirante: "))
+            if Ingreso < 0:
+                print("Ingresa un ingreso valido")
+            else:
+                valido = True
+        except ValueError:
+            print("Ingresa un ingreso valido")
+    #Pregunta Calificacion
+    valido = False
+    while not valido:
+        try:
+            Calificacion = float(input("Ingresa el Promedio escolar del aspirante: "))
+            if Calificacion < 0 or Calificacion > 10:
+                print("Ingresa un promedio valido")
+            else:
+                valido = True
+        except ValueError:
+            print("Ingresa un promedio valido")
+    #Pregunta Modalidad Escolar
+    valido = False
+    while not valido:
+        try:
+            Modalidad = float(input("Ingresa la Modalidad Escolar del aspirante\n\t1.- Presencial\n\t2.- A Distancia\n"))
+            if Modalidad == 1 or Modalidad == 2:
+                valido = True
+            else:
+                print("Ingresa una Modalidad Escolar valida")
+        except ValueError:
+            print("Ingresa una Modalidad Escolar valida")
+    #Pregunta Dependientes
+    valido = False
+    while not valido:
+        try:
+            Dependientes = float(input("Ingresa el numero de Dependientes del aspirante: "))
+            if Dependientes < 0 or Dependientes > 50:
+                print("Ingresa un numero de Dependientes valido")
+            else:
+                valido = True
+        except ValueError:
+            print("Ingresa un numero de Dependientes valido")
+    #Pregunta Recurses
+    valido = False
+    while not valido:
+        try:
+            Recurses = float(input("Ingresa el numero de Recurses que ha llevado el aspirante: "))
+            if Recurses < 0 or Recurses > 50:
+                print("Ingresa un numero de Recurses valido")
+            else:
+                valido = True
+        except ValueError:
+            print("Ingresa un numero de Recurses valido")
+    #Pregunta Nivel SocioEconomico
+    valido = False
+    while not valido:
+        try:
+            lvleconomico = float(input("Ingresa el Nivel SocioEconomico del aspirante:\n\t1.- Clase Baja\n\t2.- Clase Media\n\t3.- Clase Alta\n"))
+            if lvleconomico == 1 or lvleconomico == 2 or lvleconomico == 3:
+                valido = True
+            else:
+                print("Ingresa un Nivel SocioEconomico valido")
+        except ValueError:
+            print("Ingresa un Nivel SocioEconomico valido")
+    #Pregunta Becas Adicionales
+    valido = False
+    while not valido:
+        try:
+            BecasPlus = float(input("Ingresa el numero de Becas Adicionales con las que cuenta el aspirante: "))
+            if BecasPlus < 0 or BecasPlus > 5:
+                print("Ingresa un numero de Becas Adicionales valido")
+            else:
+                valido = True
+        except ValueError:
+            print("Ingresa un numero de Becas Adicionales valido")
+
+    return [[Edad],[Ingreso],[Calificacion],[Modalidad],[Dependientes],[Recurses],[lvleconomico],[BecasPlus]]
 
 # Open the CSV file for reading
 dataset = []
 outputs = []
 Categorias = []
 Campos = []
+           
 with open('becas.csv', newline='') as csvfile:
     csvreader = csv.reader(csvfile)
     Campos = next(csvreader)
@@ -138,6 +227,10 @@ dataset = Normalizar(Categorias, minmax[0], minmax[1])
 n_inputs = len(dataset[0])
 n_outputs = 1
 
-Red = Crear_Red(n_inputs, 1, 1, n_outputs)
-Entrena(Red, dataset, 0.5, 20, outputs)
-Predecir(Red)
+
+Red = Crear_Red(n_inputs, 2, 3, n_outputs)
+Entrena(Red, dataset, 0.5, 5000, outputs)
+inputbase = Preguntas_Input()
+prediccion_Set = Normalizar(inputbase, minmax[0], minmax[1])
+print()
+Predecir(Red, prediccion_Set[0])
