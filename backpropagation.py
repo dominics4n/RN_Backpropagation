@@ -251,6 +251,21 @@ nivelprint = 1
 
 Red = Crear_Red(n_inputs, 2, 3, n_outputs)
 Entrena(Red, dataset, 0.5, 5000, outputs, frecuenciaprint, nivelprint)
-inputbase = Preguntas_Input()
-prediccion_Set = Normalizar(inputbase, minmax[0], minmax[1])
-Predecir(Red, prediccion_Set[0])
+
+prediciendo = True
+while prediciendo:
+    inputbase = Preguntas_Input()
+    prediccion_Set = Normalizar(inputbase, minmax[0], minmax[1])
+    Predecir(Red, prediccion_Set[0])
+    valido = False
+    while not valido:
+        try:
+            Repetir = int(input("Deseas predecir una nueva beca? \n\t0.- NO (Salir)\n\t1.- SI\n"))
+            if Repetir !=0 and Repetir != 1:
+                print("Ingresa una opcion valida")
+            else:
+                valido = True
+                if Repetir == 0:
+                    prediciendo = False
+        except ValueError:
+            print("Ingresa una opcion valid")
